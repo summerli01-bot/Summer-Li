@@ -1,0 +1,10 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+const root=path.resolve(import.meta.dirname);
+await fs.mkdir(path.join(root,'dist/server'),{recursive:true});
+await fs.mkdir(path.join(root,'dist/client'),{recursive:true});
+const html=await fs.readFile(path.join(root,'index.html'),'utf8');
+const worker=await fs.readFile(path.join(root,'worker.mjs'),'utf8');
+await fs.writeFile(path.join(root,'dist/server/index.js'),worker.replace("import page from './page.mjs';",'const page='+JSON.stringify(html)+';'));
+await fs.copyFile(path.join(root,'sop.pdf'),path.join(root,'dist/client/sop.pdf'));
+console.log('Public build ready: HTML, PDF, private lookup Worker.');

@@ -1,0 +1,12 @@
+{
+  "name": "el-fbs-all-in-one",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node build.mjs && node verify.mjs"
+  }
+}
