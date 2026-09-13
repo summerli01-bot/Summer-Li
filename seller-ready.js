@@ -16,7 +16,7 @@ $('username').addEventListener('input',changed);
 // request immediately as well so an older response cannot repopulate the form.
 $('shop').addEventListener('input',()=>{version++;result={status:'empty'};button.disabled=false;showLookup()});
 [$('shop'),$('username')].forEach(el=>el.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();lookupShop()}}));
-window.addEventListener('cost-preview-update',()=>{const part=$('freeTrialPart');if(!part)return;part.querySelector('.exact-shop-result')?.remove();if(!result?.matched)return;const box=document.createElement('div');box.className='exact-shop-result cash-note';box.innerHTML='<b>已匹配的 Free Trial 店铺</b><p>Shop ID：'+E(result.shopId)+'<br>Username：'+E(result.username)+'<br>首次入仓日期：'+E(result.firstInboundAfterTrial||'暂未入仓')+'</p>';part.prepend(box)});
+window.addEventListener('cost-preview-update',()=>{const part=$('freeTrialPart');if(!part)return;part.querySelector('.exact-shop-result')?.remove();if(!result?.matched)return;const box=document.createElement('div');box.className='exact-shop-result cash-note';box.innerHTML='<b>已匹配的 Free Trial 店铺</b><p>Shop ID：'+E(result.shopId)+'<br>Username：'+E(result.username)+'<br>首次入仓日期：'+E(Object.prototype.hasOwnProperty.call(result,'firstInboundAfterTrial')?(result.firstInboundAfterTrial||'暂未入仓'):'入仓日期待同步')+'</p>';part.prepend(box)});
 const style=document.createElement('style');style.textContent='#cost .shop-query-compact{grid-column:1/-1;justify-self:start;align-self:center;width:auto;min-height:36px;padding:7px 13px;font-size:13px;line-height:1.4;font-weight:600;border:1px solid #e6aa98;border-radius:8px;background:#fff6f1;color:#b64128;transition:background .15s,border-color .15s}#cost .shop-query-compact:hover{background:#ffe9df;border-color:#d76547}#cost .shop-query-compact:focus-visible{outline:2px solid #ee4d2d;outline-offset:3px}#cost .shop-query-compact:disabled{opacity:.6;cursor:wait}@media(min-width:851px){#cost .form{position:sticky;top:16px;max-height:calc(100dvh - 32px);overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}}@media(max-width:850px){#cost .form{position:static;max-height:none}}';document.head.append(style);
 document.querySelector('[data-page="cost"]').textContent='官方仓费用测算';
 document.querySelector('#cost .head h2').nextElementSibling.textContent='填写商品与经营信息，对比每件成本和预计每月节省。';
@@ -24,6 +24,5 @@ document.querySelector('#cost>.notice').textContent='本页比较 Free Trial 情
 $('price').closest('.field').firstChild.textContent='单件成交金额 RMB';$('units').closest('.field').firstChild.textContent='预计月销量（件）';
 document.querySelector('.hero>p').textContent='了解入仓流程，查询适用激励，比较官方仓成本。';
 document.querySelector('.footer span').innerHTML='数据参考日期：2026-09-13<br>测算仅作方案比较，实际资格、费用和奖励以生效政策及账单为准。';
-const sop=document.querySelector('#guide .sop');if(sop){const head=sop.previousElementSibling;head.querySelector('h2').textContent='官方入仓操作指南';const link=head.querySelector('a');link.href='https://shopee.cn/edu/article/6664';link.textContent='前往卖家大学查看完整指南 ↗';const note=document.createElement('p');note.className='notice';note.textContent='按上方步骤查看商品提报、贴标发货和仓库预约说明。首次发货前，请与客户经理确认本站要求。';sop.replaceWith(note);}
 showLookup();
 })();
