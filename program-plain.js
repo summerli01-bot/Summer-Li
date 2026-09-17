@@ -7,15 +7,15 @@ function requirements(r,k){const s=r.site;let todo='',when='';
 if(k==='trial'){todo='确认本店首次入仓、历史库存及尺寸条件，完成入库后核对免费期开通。';when='免费期内享受；入库日期不等于开通日期。';}
 if(k==='acquisition'){todo=s==='SG'?'按邀请窗口首次入仓，并核验四项权益配置；9 月 FBS 占比低于 60% 可能移出项目。':s==='TH'?'核验邀请与首次入仓窗口；FBS 占比达到 40% 档，保持至月度审核。':'核验首次入仓和邀请资格；FBS 占比达到 20% / 40% 档，争取对应返佣。';when=s==='TH'?'M 月达标后核验 M+2 月佣金优惠。':s==='SG'?'完成入仓后逐项确认开通；券按月配置。':'当月达标，次月核算返佣；入选不等于已到账。';}
 if(k==='pene'){todo=s==='MY'?'把 FBS 占比提升至 20%、40% 或 60%，对应不同操作费折扣。':s==='SG'?'按名单中的具体店铺，提高 FBS 占比并达到该店当月目标。':'本月 FBS 占比较上月提高 5 个百分点。例如 20% → 25%，不是 20% × 1.05。';when='本月推进并核验月末结果，再确认次月价卡；免费期内不重复减免操作费。';}
-if(k==='vip'){todo='先获得 Local / Regional VIP 提名，再达到本月基础或挑战目标。'+(s==='PH'?'PH 还需 FBS 占比不下降。':s==='TH'?'TH 还需广告投入率不下降。':'');when='按月考核；RR 达到 100% 表示当前日均达到目标，月末结算后确认奖励。';}
+if(k==='vip'){todo='Local / Regional VIP 按季度报名，入选后完成每月基础或挑战目标。'+(s==='PH'?'PH 还需 FBS 占比不下降。':s==='TH'?'TH 还需广告投入率不下降。':'');when='按月考核；RR 达到 100% 表示当前日均达到目标，月末结算后确认奖励。';}
 if(k==='shipping'){todo='核验本站所有店铺的官方仓入库历史、头程名单及当季折扣，再预约发运。';when='从首次官方头程出仓日起核验 90 天；不会因再次查询而重置。';}
 if(k==='pickup'){todo='提供三方仓地址与备货安排，由客户经理确认免费揽收资格和预约。';when='以确认的可用次数、预约日和截止日为准。';}
-return overlap(r,k)+`<div class="plain-conditions"><div><span>你需要做到</span><p>${E(todo)}</p></div><div><span>什么时候享受</span><p>${E(when)}</p></div></div>`;
+const enrollment=['trial','pene','acquisition'].includes(k)?'<p class="enrollment-note">名单自动刷新，无需报名；仍需满足项目资格与生效条件。</p>':k==='vip'?'<p class="enrollment-note">Local / Regional VIP：按季度报名，按月考核。</p>':'';return enrollment+overlap(r,k)+`<div class="plain-conditions"><div><span>你需要做到</span><p>${E(todo)}</p></div><div><span>什么时候享受</span><p>${E(when)}</p></div></div>`;
 }
 const order=['vip','pene','acquisition','trial','pickup','shipping'];
 const entries=(r,k)=>Array.isArray(r[k])?r[k].filter(x=>k!=='acquisition'||!x.excluded):[];
 const has=(r,k)=>k==='trial'?r.trialDetails?.length:k==='pickup'?r.pickup?.first||r.pickup?.multiple:entries(r,k).length;
-function shortGoal(r,k){return {trial:'核验新店资格 → 首批入库 → 确认免费期开通',acquisition:r.site==='SG'?'邀请窗口入仓；核验4项配置及9月60%占比要求':r.site==='TH'?'首次入仓＋FBS占比达到40%':'首次入仓＋FBS占比达到20% / 40%档',pickup:'确认当地三方仓库存 → 找客户经理预约',pene:r.site==='MY'?'FBS占比达到20% / 40% / 60%档':r.site==='SG'?'达到指定店铺当月占比目标':'FBS占比较上月提高5个百分点',vip:'获得提名 → 完成本月基础/挑战目标及本站附加条件',shipping:'核验本站新卖家资格 → 官方头程发运 → 核对90天窗口'}[k];}
+function shortGoal(r,k){return {trial:'核验新店资格 → 首批入库 → 确认免费期开通',acquisition:r.site==='SG'?'邀请窗口入仓；核验4项配置及9月60%占比要求':r.site==='TH'?'首次入仓＋FBS占比达到40%':'首次入仓＋FBS占比达到20% / 40%档',pickup:'确认当地三方仓库存 → 找客户经理预约',pene:r.site==='MY'?'FBS占比达到20% / 40% / 60%档':r.site==='SG'?'达到指定店铺当月占比目标':'FBS占比较上月提高5个百分点',vip:'季度报名 → 按月达标，并满足本站附加条件',shipping:'核验本站新卖家资格 → 官方头程发运 → 核对90天窗口'}[k];}
 function metric(r,k){if(k==='trial')return {label:'已有入库记录',text:r.trialDetails.filter(x=>x.firstInboundAfterTrial).length+' / '+r.trialDetails.length+' 家',note:'入库不等于免费期已开通'};if(k==='pickup')return {label:'名单资格',text:'首次 '+(r.pickup.first?'有':'待核验')+' · 多次 '+(r.pickup.multiple?'有':'待核验'),note:'联系客户经理确认服务'};const rr=entries(r,k);if(k==='pene'){const g=rr[0]?.progress?.goal;return {label:'项目表占比 / 目标',text:Number.isFinite(g?.currentPercent)?g.currentPercent.toFixed(2)+'% / '+(Number.isFinite(g.targetPercent)?g.targetPercent.toFixed(2)+'%':'待确认'):'目标数据待补充',percent:g?.targetPercent>0?g.currentPercent/g.targetPercent*100:null,note:r.trialDetails?.length?'免费期内操作费不重复减免；查看搭配说明':rr[0]?.progress?.forecastCard?.label||'次月价卡待核验'};}const ratio=rr.flatMap(x=>x.progress?.ratios||[]).find(x=>Number.isFinite(x.percent));return {label:ratio?.label||'名单记录',text:ratio?ratio.percent.toFixed(1)+'%':'已匹配 · 生效待核验',percent:k==='vip'?ratio?.percent:null,note:k==='vip'?'RR为当前日均÷目标，非整月结算':k==='acquisition'?'占比达标后仍需核验入仓窗口与审核':'折扣与有效期另核验'};}
 function meter(r,k){if(k==='vip')return entries(r,k).map(x=>{const ratios=(x.progress?.ratios||[]).filter(a=>Number.isFinite(a.percent));return `<div class="mini-metric"><span>${E(x.type)} · ${E(x.month||'本月')}</span>${ratios.map(a=>`<span>${E(a.label)}</span><b>${a.percent.toFixed(1)}%</b><div class="mini-track"><i style="width:${Math.max(0,Math.min(100,a.percent))}%"></i></div>`).join('')||'<b>达成率待补充</b>'}<small>当前日均 ÷ 目标；非月末结算</small></div>`}).join('');const m=metric(r,k);return `<div class="mini-metric"><span>${E(m.label)}</span><b>${E(m.text)}</b>${Number.isFinite(m.percent)?`<div class="mini-track"><i style="width:${Math.max(0,Math.min(100,m.percent))}%"></i></div>`:''}<small>${E(m.note)}</small></div>`;}
 function rank(r){if(entries(r,'vip').some(x=>x.type==='Regional VIP'))return 0;return ['vip','pene','acquisition','trial'].findIndex(k=>has(r,k))<0?9:['vip','pene','acquisition','trial'].findIndex(k=>has(r,k))+.1;}
@@ -30,5 +30,7 @@ const m=window.FBSMechanisms.programs;
 m.shipping.benefit={MY:'官方头程折扣 · 当季有效价卡待核验',PH:'官方头程折扣 · 当季有效价卡待核验',TH:'官方头程折扣 · 当季有效价卡待核验',SG:'此新卖家头程项目未覆盖 SG'};
 m.shipping.time='首次官方头程出仓日起 90 天；本次总览列 Q1 85 折、后续季度待定，当前适用价卡请向客户经理确认。';
 m.acquisition.time.SG='按汇总机制：1kg 以下尾程 SGD 0.68/单；须核验适用店铺及配置生效，优惠券按月发放。';
+m.vip.rule='Local / Regional VIP 按季度报名，入选后按月考核基础或挑战目标及站点附加条件。Local VIP 核验单站门槛；Regional VIP 核验四站门槛，Local 升级需连续两个月四站达标。';
+m.vip.action='联系客户经理确认季度报名窗口，入选后按月推进目标。';
 m.pene.benefit.TH=reward({site:'TH'},'pene');
 })();
