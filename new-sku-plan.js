@@ -8,6 +8,7 @@
   const records=[['站点','shop id','mt_sku_id','预计备货数量'],...rows.map(r=>[r.site,r.shopId,mpSkuId(r),choose(r).qty])];
   return '\uFEFF'+records.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n')+'\r\n';
  }
- const api={mpSkuId,itemLink,minimumTier,minimumPlan,exportCSV};
+ function tierPlan(rows,doc){return rows.flatMap(r=>{const t=(r.tiers||[]).find(t=>t.doc===(r.site==='SG'?45:Number(doc))&&Number.isFinite(t.qty)&&t.qty>0);return t?[{id:r.id,doc:t.doc,qty:t.qty}]:[]})}
+ const api={mpSkuId,itemLink,minimumTier,minimumPlan,tierPlan,exportCSV};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else window.NewSkuPlan=api;
 })();
