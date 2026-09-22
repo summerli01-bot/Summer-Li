@@ -16,12 +16,19 @@ sections[1].querySelector('.field-grid').append(...sections[2].querySelector('.f
 sections[2].remove();
 form.prepend(sections[1],sections[0]);sections[0].append(optional);optional.open=true;
 const intro=document.createElement('p');intro.className='tax-banner';intro.textContent='不填店铺也能试算；输入店铺信息可进一步核验 Free Trial 资格。';form.prepend(intro);
-const tableSource='<a target="_blank" rel="noopener" href="https://shopee.cn/edu/article/25770">佣金、服务费及交易手续费（2026-08-26）</a>';
+const tableSource='<a target="_blank" rel="noopener" href="https://shopee.cn/edu/article/25770">佣金、服务费及交易手续费（核对于 2026-09-22）</a>';
 const costs={MY:{fx:1.62,commission:[.1512,.1836,.1836],tx:.0378,tech:.05,infra:[0,.54,.54]},SG:{fx:5.33,commission:[.11,.16,.16],tx:.03,tech:.05,infra:[0,0,0]},TH:{fx:.21,tx:.0321,tech:.05,infra:[1.07,1.07,1.07]},PH:{fx:.124,tx:.0224,tech:0,infra:[5,5,5]}};
 $('site').value='MY';
+
+// PH category commission: official January 2026 schedules, checked 2026-09-22.
+const phGroups={normal:[['相机与无人机、手机、平板电脑、可穿戴设备',7,10],['电脑与配件、配件、其他、SIM 卡、对讲机',7.5,10.5],['音频设备（耳机）、游戏及主机、家用电器、食品与饮料、母婴',8,11],['美妆、健康、宠物、车辆零部件及配件、时尚配饰、包袋、鞋履、手表',8.5,11.5],['图书与杂志、爱好与收藏、家居与生活、运动与户外、文具、旅行与箱包、服饰',9,12]],mall:[['电脑与配件、手机及配件',6,9],['音频设备（耳机）、电池、电子烟、游戏及主机、大型家电、其他、投影仪及配件、遥控器、小型家电、电视及配件',6.5,9.5],['相机与无人机、食品与饮料',7,10.5],['母婴用品、宠物用品',7.5,10.5],['爱好与收藏',8,11],['服饰、图书与杂志、电路与零件、时尚配饰、厨房电器、包袋、鞋履、车辆零部件及配件、文具、手表',8.5,11.5],['美妆、健康',8.5,12],['家居与生活、运动与户外',9,12],['旅行与行李箱',9.5,12.5]]};
+const phField=document.createElement('label');phField.className='field full';phField.innerHTML='PH 商品类目<select id="phCategory" aria-label="PH 商品类目"></select><small>默认音频设备（耳机）；请按实际商品类目选择，佣金自动计算。</small>';
+sections[0].querySelector('.field-grid').append(phField);
+let phStore='';function phSelection(){const type=$('store').value==='mall'?'mall':'normal',groups=phGroups[type];if(phStore!==type){$('phCategory').innerHTML=groups.map((g,i)=>`<option value="${i}" ${g[0].startsWith('音频')?'selected':''}>${g[0]}</option>`).join('');phStore=type}phField.hidden=$('site').value!=='PH';phField.style.display=phField.hidden?'none':'';return groups[Number($('phCategory').value)]}
+
 let last=null;
-function render(v){last=v;const s=$('site').value,c=costs[s],fx=N('taxFx'),p=N('price'),u=N('units'),coupon=N('taxCoupon'),shipping=N('taxBuyerShip');if(!fx||p===null||!u||coupon===null||coupon>p||shipping===null||!N('l')||!N('w')||!N('h')||!N('weight')){result.innerHTML='<h3>请补齐有效的产品信息</h3><p>请填写有效的尺寸、重量、商品价格及预计月销量。</p>';return}
-const local=p/fx,base=p-coupon,arr=s==='TH'?($('store').value==='mall'?[.2033,.2461,.2461]:[.1819,.2247,.2247]):s==='PH'?[N('taxPhF')===null?null:N('taxPhF')/100,N('taxPhP')===null?null:N('taxPhP')/100,.12]:c.commission;
+function render(v){last=v;const ph=phSelection();const s=$('site').value,c=costs[s],fx=N('taxFx'),p=N('price'),u=N('units'),coupon=N('taxCoupon'),shipping=N('taxBuyerShip');if(!fx||p===null||!u||coupon===null||coupon>p||shipping===null||!N('l')||!N('w')||!N('h')||!N('weight')){result.innerHTML='<h3>请补齐有效的产品信息</h3><p>请填写有效的尺寸、重量、商品价格及预计月销量。</p>';return}
+const local=p/fx,base=p-coupon,arr=s==='TH'?($('store').value==='mall'?[.2033,.2461,.2461]:[.1819,.2247,.2247]):s==='PH'?[ph[1]/100,ph[2]/100,.12]:c.commission;
 if(['taxDuty','taxNlvg','taxPhF','taxPhP'].some(id=>N(id)!==null&&N(id)>100)){result.innerHTML='<h3>税率与费率请输入 0–100 之间的百分数</h3>';return}
 const nlvg=N('taxNlvg')===null?null:N('taxNlvg')/100;
 const tax=s==='MY'?FBSCostTax.myTax(local,nlvg):s==='TH'?FBSCostTax.thTax(local,N('taxDuty')===null?null:N('taxDuty')/100):null;
@@ -29,7 +36,7 @@ const buyerTax=s==='MY'?tax.buyerTax*fx:s==='TH'?(tax.front===null?null:(tax.fro
 const freight=(v.r.base+Math.max(0,Math.ceil((N('weight')-v.r.threshold)/10))*v.r.add)*fx;
 const op=N('localOp')*fx;const pf=N('tax3pf'),po=N('op3pf');
 const rows=[];const add=(name,values,formulas)=>rows.push({name,values,formulas});
-add('销售佣金',arr.map(r=>r===null?null:base*r),arr.map(r=>r===null?'按商品类目确认':`${M(base)} × ${pc(r)}`));
+add('销售佣金',arr.map(r=>r===null?null:base*r),arr.map(r=>r===null?'按商品类目确认':`${M(base)} × ${pc(r)}${s==='PH'?'（含税；按所选店铺类型及类目）':''}`));
 const txbase=[base+shipping,base+shipping,buyerTax===null?null:base+shipping+buyerTax];
 // 未核对的站点进口税不自动套用；此列为已知费用小计。
 if(s==='SG'||s==='PH')txbase[2]=base+shipping;
