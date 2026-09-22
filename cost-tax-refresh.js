@@ -1,6 +1,6 @@
 (()=>{
-const fixed={taxUsd:7.2,taxDuty:8,taxNlvg:10,tax3pf:.45,taxCoupon:0,taxBuyerShip:0,taxPhF:null,taxPhP:null};
-const $=id=>document.getElementById(id),N=id=>id==='taxFx'?costs[$('site').value].fx:Object.hasOwn(fixed,id)?fixed[id]:FBSCostTax.numeric($(id)?.value),M=v=>v===null?'待确认':'¥'+v.toFixed(2),pc=n=>(n*100).toFixed(2)+'%',E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fixed={taxUsd:7.2,taxDuty:8,taxNlvg:10,tax3pf:.45,taxCoupon:0,taxBuyerShip:0};
+const $=id=>document.getElementById(id),N=id=>id==='taxFx'?costs[$('site').value].fx:Object.hasOwn(fixed,id)?fixed[id]:FBSCostTax.numeric($(id)?.value),M=v=>Array.isArray(v)?(v[0]===v[1]?'¥'+v[0].toFixed(2):'¥'+v[0].toFixed(2)+'–¥'+v[1].toFixed(2)):v===null?'待确认':'¥'+v.toFixed(2),pc=n=>(n*100).toFixed(2)+'%',E=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const form=document.querySelector('#cost .form'), result=$('freeTrialPart');
 const sections=[...form.querySelectorAll(':scope>.form-section')];
 sections[0].querySelector('h3').textContent='站点与店铺类型';
@@ -20,23 +20,17 @@ const tableSource='<a target="_blank" rel="noopener" href="https://shopee.cn/edu
 const costs={MY:{fx:1.62,commission:[.1512,.1836,.1836],tx:.0378,tech:.05,infra:[0,.54,.54]},SG:{fx:5.33,commission:[.11,.16,.16],tx:.03,tech:.05,infra:[0,0,0]},TH:{fx:.21,tx:.0321,tech:.05,infra:[1.07,1.07,1.07]},PH:{fx:.124,tx:.0224,tech:0,infra:[5,5,5]}};
 $('site').value='MY';
 
-// PH category commission: official January 2026 schedules, checked 2026-09-22.
-const phGroups={normal:[['相机与无人机、手机、平板电脑、可穿戴设备',7,10],['电脑与配件、配件、其他、SIM 卡、对讲机',7.5,10.5],['音频设备（耳机）、游戏及主机、家用电器、食品与饮料、母婴',8,11],['美妆、健康、宠物、车辆零部件及配件、时尚配饰、包袋、鞋履、手表',8.5,11.5],['图书与杂志、爱好与收藏、家居与生活、运动与户外、文具、旅行与箱包、服饰',9,12]],mall:[['电脑与配件、手机及配件',6,9],['音频设备（耳机）、电池、电子烟、游戏及主机、大型家电、其他、投影仪及配件、遥控器、小型家电、电视及配件',6.5,9.5],['相机与无人机、食品与饮料',7,10.5],['母婴用品、宠物用品',7.5,10.5],['爱好与收藏',8,11],['服饰、图书与杂志、电路与零件、时尚配饰、厨房电器、包袋、鞋履、车辆零部件及配件、文具、手表',8.5,11.5],['美妆、健康',8.5,12],['家居与生活、运动与户外',9,12],['旅行与行李箱',9.5,12.5]]};
-const phField=document.createElement('label');phField.className='field full';phField.innerHTML='PH 商品类目<select id="phCategory" aria-label="PH 商品类目"></select><small>默认音频设备（耳机）；请按实际商品类目选择，佣金自动计算。</small>';
-sections[0].querySelector('.field-grid').append(phField);
-let phStore='';function phSelection(){const type=$('store').value==='mall'?'mall':'normal',groups=phGroups[type];if(phStore!==type){$('phCategory').innerHTML=groups.map((g,i)=>`<option value="${i}" ${g[0].startsWith('音频')?'selected':''}>${g[0]}</option>`).join('');phStore=type}phField.hidden=$('site').value!=='PH';phField.style.display=phField.hidden?'none':'';return groups[Number($('phCategory').value)]}
-
 let last=null;
-function render(v){last=v;const ph=phSelection();const s=$('site').value,c=costs[s],fx=N('taxFx'),p=N('price'),u=N('units'),coupon=N('taxCoupon'),shipping=N('taxBuyerShip');if(!fx||p===null||!u||coupon===null||coupon>p||shipping===null||!N('l')||!N('w')||!N('h')||!N('weight')){result.innerHTML='<h3>请补齐有效的产品信息</h3><p>请填写有效的尺寸、重量、商品价格及预计月销量。</p>';return}
-const local=p/fx,base=p-coupon,arr=s==='TH'?($('store').value==='mall'?[.2033,.2461,.2461]:[.1819,.2247,.2247]):s==='PH'?[ph[1]/100,ph[2]/100,.12]:c.commission;
-if(['taxDuty','taxNlvg','taxPhF','taxPhP'].some(id=>N(id)!==null&&N(id)>100)){result.innerHTML='<h3>税率与费率请输入 0–100 之间的百分数</h3>';return}
+function render(v){last=v;const s=$('site').value,c=costs[s],fx=N('taxFx'),p=N('price'),u=N('units'),coupon=N('taxCoupon'),shipping=N('taxBuyerShip');if(!fx||p===null||!u||coupon===null||coupon>p||shipping===null||!N('l')||!N('w')||!N('h')||!N('weight')){result.innerHTML='<h3>请补齐有效的产品信息</h3><p>请填写有效的尺寸、重量、商品价格及预计月销量。</p>';return}
+const local=p/fx,base=p-coupon,arr=s==='TH'?($('store').value==='mall'?[.2033,.2461,.2461]:[.1819,.2247,.2247]):s==='PH'?($('store').value==='mall'?[[.06,.095],[.09,.125],.12]:[[.07,.09],[.10,.12],.12]):c.commission;
+if(['taxDuty','taxNlvg'].some(id=>N(id)!==null&&N(id)>100)){result.innerHTML='<h3>税率与费率请输入 0–100 之间的百分数</h3>';return}
 const nlvg=N('taxNlvg')===null?null:N('taxNlvg')/100;
 const tax=s==='MY'?FBSCostTax.myTax(local,nlvg):s==='TH'?FBSCostTax.thTax(local,N('taxDuty')===null?null:N('taxDuty')/100):null;
 const buyerTax=s==='MY'?tax.buyerTax*fx:s==='TH'?(tax.front===null?null:(tax.front-local)*fx):null;
 const freight=(v.r.base+Math.max(0,Math.ceil((N('weight')-v.r.threshold)/10))*v.r.add)*fx;
 const op=N('localOp')*fx;const pf=N('tax3pf'),po=N('op3pf');
 const rows=[];const add=(name,values,formulas)=>rows.push({name,values,formulas});
-add('销售佣金',arr.map(r=>r===null?null:base*r),arr.map(r=>r===null?'按商品类目确认':`${M(base)} × ${pc(r)}${s==='PH'?'（含税；按所选店铺类型及类目）':''}`));
+add('销售佣金',arr.map(r=>Array.isArray(r)?r.map(x=>base*x):base*r),arr.map(r=>`${M(base)} × ${Array.isArray(r)?pc(r[0])+'–'+pc(r[1]):pc(r)}${s==='PH'?'（官方总表；含税）':''}`));
 const txbase=[base+shipping,base+shipping,buyerTax===null?null:base+shipping+buyerTax];
 // 未核对的站点进口税不自动套用；此列为已知费用小计。
 if(s==='SG'||s==='PH')txbase[2]=base+shipping;
@@ -47,12 +41,13 @@ add('头程 / 跨境物流藏价',[v.freight,pf,freight],[`${v.volume.toFixed(6)
 add('操作费 · Free Trial 情景',[v.eligible?0:op,po,0],[v.eligible?`原 ${M(op)} − 免费期减免 ${M(op)} = ¥0.00`:`${N('localOp')} 当地币 × ${fx}；尺寸不在免费范围`,`${M(po)}/件（输入值）`,'无仓内操作费单列']);
 if(s==='MY'&&local>500)add('MY 高价值商品税',[null,null,tax.sellerTax===null?null:tax.sellerTax*fx],['进口清关成本另核；不可视为免税','进口清关成本另核；不可视为免税',tax.formula+'，再 × '+fx+' 换算 RMB']);
 if(s==='PH')add('FSS / 卖家成长计划费用',[null,null,null],Array(3).fill('依店铺类别、费率及上限核验，暂未计入'));
-const totals=[0,1,2].map(i=>rows.reduce((sum,r)=>sum+(r.values[i]??0),0));
+const totals=[0,1,2].map(i=>rows.reduce((sum,r)=>sum+(Array.isArray(r.values[i])?r.values[i][0]:(r.values[i]??0)),0));
+const totalRanges=totals.map((low,i)=>[low,rows.reduce((sum,r)=>sum+(Array.isArray(r.values[i])?r.values[i][1]:(r.values[i]??0)),0)]);
 const comparable=s!=='PH'&&!(s==='TH'&&buyerTax===null)&&!(s==='MY'&&local>500);
-const savings=[2,1].map(i=>{const delta=totals[i]-totals[0];return `<article><span>相较 ${i===2?'SLS 跨境直邮':'3PF 三方仓'}</span><b>${comparable?(delta>=0?'每件少付 ':'每件多付 ')+M(Math.abs(delta)):'待补齐后对比'}</b>${comparable?`<b>${u} 件/月${delta>=0?'少付':'多付'} ${M(Math.abs(delta)*u)}</b>`:'<p>当前仅展示已知费用小计，不作为完整节省结论。</p>'}</article>`}).join('');
-result.innerHTML=`<span class="section-no">03 · FREE TRIAL 情景测算</span><h3>同一件商品，三种履约方式</h3><p class="muted">${E(s)} · 商品券前价 ${M(p)} · ${v.code} · ${u} 件/月。默认免费期已开通；店铺资格可在左侧选填核验。</p><div class="tax-bars">${totals.map((t,i)=>`<div><strong>${['FBS 官方仓','3PF 三方仓','SLS 跨境直邮'][i]}</strong><i style="width:${Math.max(1,t/Math.max(...totals)*65)}%;background:${i===0?'#ee4d2d':'#aaa397'}"></i><b>${M(t)}</b></div>`).join('')}</div><p class="muted">每件已列费用小计 · 不含采购、当地清关、仓储及其他未列成本，不等于利润。</p><div class="tax-dual">${savings}</div>
+const savings=[2,1].map(i=>{const delta=totals[i]-totals[0];return `<article><span>相较 ${i===2?'SLS 跨境直邮':'3PF 三方仓'}</span><b>${comparable?(delta>=0?'每件少付 ':'每件多付 ')+M(Math.abs(delta)):'待补齐后对比'}</b>${comparable?`<b>${u} 件/月${delta>=0?'少付':'多付'} ${M(Math.abs(delta)*u)}</b>`:'<p>当前展示已列费用范围；未计入的服务费另核，不作为完整节省结论。</p>'}</article>`}).join('');
+result.innerHTML=`<span class="section-no">03 · FREE TRIAL 情景测算</span><h3>同一件商品，三种履约方式</h3><p class="muted">${E(s)} · 商品券前价 ${M(p)} · ${v.code} · ${u} 件/月。默认免费期已开通；店铺资格可在左侧选填核验。</p><div class="tax-bars">${totals.map((t,i)=>`<div><strong>${['FBS 官方仓','3PF 三方仓','SLS 跨境直邮'][i]}</strong><i style="width:${Math.max(1,t/Math.max(...totals)*65)}%;background:${i===0?'#ee4d2d':'#aaa397'}"></i><b>${M(totalRanges[i])}</b></div>`).join('')}</div><p class="muted">${s==='PH'?'PH 佣金按官方区间计入；图条按区间下限绘制。':''}每件已列费用小计 · 不含采购、当地清关、仓储及其他未列成本，不等于利润。</p><div class="tax-dual">${savings}</div>
 <p class="tax-banner">Free Trial 单独贡献：${v.eligible?`操作费每件少付 ${M(op)}，按 ${u} 件约 ${M(op*u)}/月。`:'当前尺寸不计免费操作费。'}佣金和物流差额不是 Free Trial 独有优惠。</p>
-<h3>每一笔怎么算？</h3><p class="muted">向右滑动查看全部渠道。金额统一为人民币；费率已含适用税项，不重复加税。</p><div class="tax-table-wrap"><table class="tax-table"><thead><tr><th>每件费用</th><th>FBS 官方仓</th><th>3PF 三方仓</th><th>SLS 跨境直邮</th></tr></thead><tbody>${rows.map(r=>`<tr><th>${r.name}</th>${r.values.map((n,i)=>`<td><b>${M(n)}</b><small>${r.formulas[i]}</small></td>`).join('')}</tr>`).join('')}<tr class="tax-total"><th>已列费用小计</th>${totals.map(t=>'<td>'+M(t)+'</td>').join('')}</tr></tbody></table></div>
+<h3>每一笔怎么算？</h3><p class="muted">向右滑动查看全部渠道。金额统一为人民币；费率已含适用税项，不重复加税。</p><div class="tax-table-wrap"><table class="tax-table"><thead><tr><th>每件费用</th><th>FBS 官方仓</th><th>3PF 三方仓</th><th>SLS 跨境直邮</th></tr></thead><tbody>${rows.map(r=>`<tr><th>${r.name}</th>${r.values.map((n,i)=>`<td><b>${M(n)}</b><small>${r.formulas[i]}</small></td>`).join('')}</tr>`).join('')}<tr class="tax-total"><th>已列费用小计</th>${totalRanges.map(t=>'<td>'+M(t)+'</td>').join('')}</tr></tbody></table></div>
 <p class="muted">交易基数按商品价＋适用买家税测算；本版未模拟额外优惠券或买家运费，实际以账单为准。每笔手续费仅计一次。SG、PH 未展开跨境商品税，本表不代表其无税。${tableSource} · <a target="_blank" href="https://shopee.cn/edu/article/20761">官方仓收费说明</a></p>
 <details class="tax-optional tax-price-appendix"><summary>04 · 买家看到的价格，为什么不一样？</summary><div class="tax-banner"><strong>同样的耳机、相同基础价，本地履约的展示价可能更有优势。</strong><br>FBS 官方仓和 3PF 三方仓均属于本地履约，不按下方跨境直邮规则自动加价。清关等成本仍需承担，展示价差不等于卖家利润。</div>${demoCards()}</details>`;
 if(typeof shopState!=='undefined'&&shopState.matched){const box=document.createElement('p');box.className='tax-banner';box.textContent='已匹配店铺：'+(shopState.username||shopState.shopId)+' · 首次入仓：'+(shopState.firstInboundAfterTrial||'暂未入仓')+'。免费期是否仍有效需按生效日期核验。';result.prepend(box)}
