@@ -23,6 +23,6 @@ document.querySelector('#cost .head h2').nextElementSibling.textContent='填写�
 document.querySelector('#cost>.notice').textContent='本页比较 Free Trial 情景下的基础费用。适用项目、成长进展与额外奖励，请查看“官方仓项目介绍”。';
 $('price').closest('.field').firstChild.textContent='单件成交金额 RMB';$('units').closest('.field').firstChild.textContent='预计月销量（件）';
 document.querySelector('.hero>p').textContent='了解入仓流程，查询适用激励，比较官方仓成本。';
-document.querySelector('.footer span').innerHTML='数据参考日期：2026-09-13<br>测算仅作方案比较，实际资格、费用和奖励以生效政策及账单为准。';
+document.querySelector('.footer span').innerHTML='Free Trial / VIP 名单核对：2026-10-15；其他数据以各项目日期为准<br>测算仅作方案比较，实际资格、费用和奖励以生效政策及账单为准。';
 showLookup();
 })();

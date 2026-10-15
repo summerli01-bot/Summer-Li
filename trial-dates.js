@@ -11,5 +11,11 @@ function estimate(site,inbound,activation){const d=parse(inbound);if(!d)return {
  if(site==='PH'){const a=parse(activation);if(a)return {start:fmt(a),end:fmt(sunday(months(a,6))),kind:'whitelist'};const sun=plusDays(mon,6);return {start:fmt(mon),startLatest:fmt(sun),end:fmt(sunday(months(mon,6))),endLatest:fmt(sunday(months(sun,6))),kind:'assumed-week'}}
  return {status:'unsupported'};
 }
-root.FBSTrialDates={estimate};if(typeof module!=='undefined')module.exports={estimate};
+function resolve(site,x){
+ const start=parse(x.incentiveStartDate)||parse(x.activationDate),end=parse(x.incentiveEndDate);
+ if(end)return {start:start?fmt(start):'',end:fmt(end),kind:'recorded',actualStart:!!start,actualEnd:true};
+ if(start){let e;if(site==='SG'||site==='MY')e=sunday(new Date(Date.UTC(start.getUTCFullYear(),start.getUTCMonth()+7,0)));else if(site==='TH')e=plusDays(months(start,6),-1);else if(site==='PH')e=sunday(months(start,6));else return {status:'unsupported'};return {start:fmt(start),end:fmt(e),kind:'activation-estimate',actualStart:true,actualEnd:false};}
+ return estimate(site,x.firstInboundAfterTrial,x.activationDate);
+}
+root.FBSTrialDates={estimate,resolve};if(typeof module!=='undefined')module.exports={estimate,resolve};
 })(typeof window!=='undefined'?window:globalThis);
